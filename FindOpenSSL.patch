@@ -25,6 +25,12 @@
 439a449,450
 > 	libssl-1_1
 > 	libssl-1_1-x64
+475,476c486,487
+<     set(LIB_EAY_NAMES crypto libeay32)
+<     set(SSL_EAY_NAMES ssl ssleay32)
+---
+>     set(LIB_EAY_NAMES crypto libeay32 crypto-1_1 crypto-1_1-x64)
+>     set(SSL_EAY_NAMES ssl ssleay32 ssl-1_1 ssl-1_1-x64)
 482a494
 >         "."
 486a499

@@ -483,8 +483,8 @@ if(WIN32 AND NOT CYGWIN)
     set(OPENSSL_CRYPTO_LIBRARY ${LIB_EAY_LIBRARY} )
   elseif(MINGW)
     # same player, for MinGW
-    set(LIB_EAY_NAMES crypto libeay32)
-    set(SSL_EAY_NAMES ssl ssleay32)
+    set(LIB_EAY_NAMES crypto libeay32 crypto-1_1 crypto-1_1-x64)
+    set(SSL_EAY_NAMES ssl ssleay32 ssl-1_1 ssl-1_1-x64)
     find_library(LIB_EAY
       NAMES
         ${LIB_EAY_NAMES}
