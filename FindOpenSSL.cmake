@@ -262,7 +262,8 @@ elseif (MSVC OR MINGW)
   endif()
 
   set(_OPENSSL_ROOT_PATHS
-    PATHS
+    PATHS    
+    "${_programfiles}/openssl"
     "${_programfiles}/OpenSSL"
     "${_programfiles}/OpenSSL-${_arch}"
     "C:/OpenSSL/"
@@ -376,6 +377,8 @@ if(WIN32 AND NOT CYGWIN)
         libcryptod
         libeay32${_OPENSSL_MSVC_RT_MODE}d
         libeay32d
+        libcrypto_1_1
+	libcrypto_1_1-x64
         cryptod
       NAMES_PER_DIR
       ${_OPENSSL_ROOT_HINTS_AND_PATHS}
@@ -388,7 +391,9 @@ if(WIN32 AND NOT CYGWIN)
         # When OpenSSL is built with default options, the static library name is suffixed with "_static".
         # Looking the "libcrypto_static.lib" with a higher priority than "libcrypto.lib" which is the
         # import library of "libcrypto.dll".
-        libcrypto${_OPENSSL_STATIC_SUFFIX}${_OPENSSL_MSVC_ARCH_SUFFIX}${_OPENSSL_MSVC_RT_MODE}
+        libcrypto_1_1
+	libcrypto_1_1-x64
+	libcrypto${_OPENSSL_STATIC_SUFFIX}${_OPENSSL_MSVC_ARCH_SUFFIX}${_OPENSSL_MSVC_RT_MODE}
         libcrypto${_OPENSSL_STATIC_SUFFIX}${_OPENSSL_MSVC_RT_MODE}
         libcrypto${_OPENSSL_STATIC_SUFFIX}
         libeay32${_OPENSSL_STATIC_SUFFIX}${_OPENSSL_MSVC_RT_MODE}
@@ -417,6 +422,8 @@ if(WIN32 AND NOT CYGWIN)
         libssl${_OPENSSL_STATIC_SUFFIX}${_OPENSSL_MSVC_RT_MODE}d
         libssl${_OPENSSL_STATIC_SUFFIX}d
         libssl${_OPENSSL_STATIC_SUFFIX}
+	libssl_1_1
+	libssl_1_1-x64
         ssleay32${_OPENSSL_STATIC_SUFFIX}${_OPENSSL_MSVC_RT_MODE}d
         ssleay32${_OPENSSL_STATIC_SUFFIX}d
         ssl${_OPENSSL_STATIC_SUFFIX}d
@@ -439,6 +446,8 @@ if(WIN32 AND NOT CYGWIN)
         # When OpenSSL is built with default options, the static library name is suffixed with "_static".
         # Looking the "libssl_static.lib" with a higher priority than "libssl.lib" which is the
         # import library of "libssl.dll".
+	libssl_1_1
+	libssl_1_1-x64
         libssl${_OPENSSL_STATIC_SUFFIX}${_OPENSSL_MSVC_ARCH_SUFFIX}${_OPENSSL_MSVC_RT_MODE}
         libssl${_OPENSSL_STATIC_SUFFIX}${_OPENSSL_MSVC_RT_MODE}
         libssl${_OPENSSL_STATIC_SUFFIX}

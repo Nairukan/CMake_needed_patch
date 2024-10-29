@@ -1,63 +1,41 @@
-diff --git a/./1/FindOpenSSL.cmake b/./2/FindOpenSSL.cmake
-index 33a0765..f59c192 100644
---- a/./1/FindOpenSSL.cmake
-+++ b/./2/FindOpenSSL.cmake
-@@ -238,7 +238,7 @@ endif()
- if (OPENSSL_ROOT_DIR OR NOT "$ENV{OPENSSL_ROOT_DIR}" STREQUAL "")
-   set(_OPENSSL_ROOT_HINTS HINTS ${OPENSSL_ROOT_DIR} ENV OPENSSL_ROOT_DIR)
-   set(_OPENSSL_ROOT_PATHS NO_DEFAULT_PATH)
--elseif (MSVC)
-+elseif (MSVC OR MINGW)
-   # http://www.slproweb.com/products/Win32OpenSSL.html
-   set(_OPENSSL_ROOT_HINTS
-     HINTS
-@@ -355,6 +355,8 @@ if(WIN32 AND NOT CYGWIN)
-         )
-     endif ()
- 
-+
-+
-     find_library(LIB_EAY_DEBUG
-       NAMES
-         # When OpenSSL is built with default options, the static library name is suffixed with "_static".
-@@ -480,10 +482,12 @@ if(WIN32 AND NOT CYGWIN)
-       NAMES_PER_DIR
-       ${_OPENSSL_ROOT_HINTS_AND_PATHS}
-       PATH_SUFFIXES
-+        "."
-         "lib/MinGW"
-         "lib"
-         "lib64"
-     )
-+    
- 
-     find_library(SSL_EAY
-       NAMES
-@@ -491,14 +495,19 @@ if(WIN32 AND NOT CYGWIN)
-       NAMES_PER_DIR
-       ${_OPENSSL_ROOT_HINTS_AND_PATHS}
-       PATH_SUFFIXES
-+        "."
-         "lib/MinGW"
-         "lib"
-         "lib64"
-     )
- 
-+
-     mark_as_advanced(SSL_EAY LIB_EAY)
-     set(OPENSSL_SSL_LIBRARY ${SSL_EAY} )
-     set(OPENSSL_CRYPTO_LIBRARY ${LIB_EAY} )
-+
-+    
-+
-     unset(LIB_EAY_NAMES)
-     unset(SSL_EAY_NAMES)
-   else()
-@@ -687,6 +696,7 @@ foreach(_comp IN LISTS OpenSSL_FIND_COMPONENTS)
- endforeach()
- unset(_comp)
- 
-+
- include(${CMAKE_CURRENT_LIST_DIR}/FindPackageHandleStandardArgs.cmake)
- find_package_handle_standard_args(OpenSSL
-   REQUIRED_VARS
+241c241
+< elseif (MSVC)
+---
+> elseif (MSVC OR MINGW)
+265c265,266
+<     PATHS
+---
+>     PATHS    
+>     "${_programfiles}/openssl"
+357a359,360
+> 
+> 
+376a380,381
+>         libcrypto_1_1
+> 	libcrypto_1_1-x64
+389c394,396
+<         libcrypto${_OPENSSL_STATIC_SUFFIX}${_OPENSSL_MSVC_ARCH_SUFFIX}${_OPENSSL_MSVC_RT_MODE}
+---
+>         libcrypto_1_1
+> 	libcrypto_1_1-x64
+> 	libcrypto${_OPENSSL_STATIC_SUFFIX}${_OPENSSL_MSVC_ARCH_SUFFIX}${_OPENSSL_MSVC_RT_MODE}
+417a425,426
+> 	libssl_1_1
+> 	libssl_1_1-x64
+439a449,450
+> 	libssl_1_1
+> 	libssl_1_1-x64
+482a494
+>         "."
+486a499
+>     
+493a507
+>         "."
+498a513
+> 
+501a517,519
+> 
+>     
+> 
+688a707
+> 
