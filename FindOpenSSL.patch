@@ -11,20 +11,20 @@
 > 
 > 
 376a380,381
->         libcrypto_1_1
-> 	libcrypto_1_1-x64
+>         libcrypto-1_1
+> 	libcrypto-1_1-x64
 389c394,396
 <         libcrypto${_OPENSSL_STATIC_SUFFIX}${_OPENSSL_MSVC_ARCH_SUFFIX}${_OPENSSL_MSVC_RT_MODE}
 ---
->         libcrypto_1_1
-> 	libcrypto_1_1-x64
+>         libcrypto-1_1
+> 	libcrypto-1_1-x64
 > 	libcrypto${_OPENSSL_STATIC_SUFFIX}${_OPENSSL_MSVC_ARCH_SUFFIX}${_OPENSSL_MSVC_RT_MODE}
 417a425,426
-> 	libssl_1_1
-> 	libssl_1_1-x64
+> 	libssl-1_1
+> 	libssl-1_1-x64
 439a449,450
-> 	libssl_1_1
-> 	libssl_1_1-x64
+> 	libssl-1_1
+> 	libssl-1_1-x64
 482a494
 >         "."
 486a499
