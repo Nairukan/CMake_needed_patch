@@ -1,0 +1,196 @@
+diff --git a/./1/FindPkgConfig.cmake b/./2/FindPkgConfig.cmake
+index 450acf4..2407d90 100644
+--- a/./1/FindPkgConfig.cmake
++++ b/./2/FindPkgConfig.cmake
+@@ -55,7 +55,7 @@ endif()
+ 
+ set(PKG_CONFIG_NAMES "pkg-config")
+ if(CMAKE_HOST_WIN32)
+-  list(PREPEND PKG_CONFIG_NAMES "pkg-config.bat")
++  list(PREPEND PKG_CONFIG_NAMES "pkg-config.exe")
+   set(_PKG_CONFIG_VALIDATOR VALIDATOR __FindPkgConfig_EXECUTABLE_VALIDATOR)
+   function(__FindPkgConfig_EXECUTABLE_VALIDATOR result_var candidate)
+     if(candidate MATCHES "\\.[Ee][Xx][Ee]$")
+@@ -72,10 +72,12 @@ else()
+ endif()
+ list(APPEND PKG_CONFIG_NAMES "pkgconf")
+ 
++
+ find_program(PKG_CONFIG_EXECUTABLE
+   NAMES ${PKG_CONFIG_NAMES}
+   NAMES_PER_DIR
+   DOC "pkg-config executable"
++  PATH_SUFFIXES "pkgconfig\\bin"
+   ${_PKG_CONFIG_VALIDATOR})
+ mark_as_advanced(PKG_CONFIG_EXECUTABLE)
+ unset(_PKG_CONFIG_VALIDATOR)
+@@ -173,7 +175,7 @@ macro(_pkgconfig_invoke _pkglist _prefix _varname _regexp)
+     # UNIX_COMMAND mode treats backslash-escaped spaces as "not a space that delimits arguments".
+     separate_arguments(_pkgconfig_invoke_result UNIX_COMMAND "${_pkgconfig_invoke_result}")
+ 
+-    #message(STATUS "  ${_varname} ... ${_pkgconfig_invoke_result}")
++
+     set(_pkgconfig_${_varname} ${_pkgconfig_invoke_result})
+     _pkgconfig_set(${_prefix}_${_varname} "${_pkgconfig_invoke_result}")
+   endif()
+@@ -366,7 +368,7 @@ macro(_pkg_recalculate _prefix _no_cmake_path _no_cmake_environment_path _imp_ta
+   endif()
+ endmacro()
+ 
+-###
++##
+ macro(_pkg_set_path_internal)
+   set(_extra_paths)
+ 
+@@ -387,13 +389,14 @@ macro(_pkg_set_path_internal)
+     # from the CMAKE_PREFIX_PATH variables
+     set(_pkgconfig_path_old "$ENV{PKG_CONFIG_PATH}")
+     set(_pkgconfig_path "${_pkgconfig_path_old}")
++
+     if(NOT _pkgconfig_path STREQUAL "")
+       file(TO_CMAKE_PATH "${_pkgconfig_path}" _pkgconfig_path)
+     endif()
+ 
+-    # Create a list of the possible pkgconfig subfolder (depending on
+-    # the system
+-    set(_lib_dirs)
++    # Create a list of the possible pkgconfig subfolder (depending on the system)
++    set(_lib_dirs) 
++
+     if(NOT DEFINED CMAKE_SYSTEM_NAME
+         OR (CMAKE_SYSTEM_NAME MATCHES "^(Linux|kFreeBSD|GNU)$"
+             AND NOT CMAKE_CROSSCOMPILING))
+@@ -403,6 +406,8 @@ macro(_pkg_set_path_internal)
+         endif()
+       else()
+         # not debian, check the FIND_LIBRARY_USE_LIB32_PATHS and FIND_LIBRARY_USE_LIB64_PATHS properties
++        # Windows specific path for .pc files
++        
+         get_property(uselib32 GLOBAL PROPERTY FIND_LIBRARY_USE_LIB32_PATHS)
+         if(uselib32 AND CMAKE_SIZEOF_VOID_P EQUAL 4)
+           list(APPEND _lib_dirs "lib32/pkgconfig")
+@@ -417,35 +422,74 @@ macro(_pkg_set_path_internal)
+         endif()
+       endif()
+     endif()
++
++    if("${CMAKE_SIZEOF_VOID_P}" STREQUAL "8")
++    set(_arch "Win64")
++    file(TO_CMAKE_PATH "$ENV{PROGRAMFILES}" _programfiles)
++  else()
++    set(_arch "Win32")
++    set(_progfiles_x86 "ProgramFiles(x86)")
++    if(NOT "$ENV{${_progfiles_x86}}" STREQUAL "")
++      # under windows 64 bit machine
++      file(TO_CMAKE_PATH "$ENV{${_progfiles_x86}}" _programfiles)
++    else()
++      # under windows 32 bit machine
++      file(TO_CMAKE_PATH "$ENV{ProgramFiles}" _programfiles)
++    endif()
++  endif()
++
++    set(_prefix_dir ${_programfiles})
++
++    if(CMAKE_SYSTEM_NAME MATCHES "^Windows$" )
++      file(GLOB _found_lib_dirs "${_prefix_dir}/*/") # Получаем все подкаталоги
++
++      foreach(_found_lib_dir ${_found_lib_dirs})
++	      if(EXISTS "${_found_lib_dir}/lib/pkgconfig") 
++          list(APPEND _lib_dirs "${_found_lib_dir}/lib/pkgconfig") # Добавляем путь к pkgconfig
++        endif()
++        if(EXISTS "${_found_lib_dir}/share/pkgconfig") 
++        list(APPEND _lib_dirs "${_found_lib_dir}/share/pkgconfig") # Добавляем путь к pkgconfig
++      endif()
++      endforeach()
++    endif()
++
++    set(_prefix_dir "")
++
+     if(CMAKE_SYSTEM_NAME STREQUAL "FreeBSD" AND NOT CMAKE_CROSSCOMPILING)
+       list(APPEND _lib_dirs "libdata/pkgconfig")
+     endif()
+-    list(APPEND _lib_dirs "lib/pkgconfig")
+-    list(APPEND _lib_dirs "share/pkgconfig")
+-
+-    # Check if directories exist and eventually append them to the
+-    # pkgconfig path list
+-    foreach(_prefix_dir ${_extra_paths})
+-      foreach(_lib_dir ${_lib_dirs})
+-        if(EXISTS "${_prefix_dir}/${_lib_dir}")
++
++    list(APPEND _pkgconfig_path ".")
++    # Check if directories exist and eventually append them to the pkgconfig path list
++    foreach(_lib_dir ${_lib_dirs})
++        if(EXISTS "${_lib_dir}")
+           list(APPEND _pkgconfig_path "${_prefix_dir}/${_lib_dir}")
+           list(REMOVE_DUPLICATES _pkgconfig_path)
+         endif()
+-      endforeach()
+     endforeach()
++    
++    list(APPEND _pkgconfig_path ".")
++
+ 
+     # Prepare and set the environment variable
+     if(NOT _pkgconfig_path STREQUAL "")
+       # remove empty values from the list
+       list(REMOVE_ITEM _pkgconfig_path "")
+       file(TO_NATIVE_PATH "${_pkgconfig_path}" _pkgconfig_path)
++
+       if(CMAKE_HOST_UNIX)
+         string(REPLACE ";" ":" _pkgconfig_path "${_pkgconfig_path}")
+         string(REPLACE "\\ " " " _pkgconfig_path "${_pkgconfig_path}")
+       endif()
++      if(CMAKE_SYSTEM_NAME MATCHES "^Windows$" )
++        string(REPLACE "\\ " " " _pkgconfig_path "${_pkgconfig_path}")
++        string(REPLACE "/" "\\" _pkgconfig_path "${_pkgconfig_path}")
++        string(REPLACE ";\\C:\\" ";C:\\" _pkgconfig_path "${_pkgconfig_path}")
++      endif()
++
+       set(ENV{PKG_CONFIG_PATH} "${_pkgconfig_path}")
+-    endif()
+ 
++    endif()
+     # Unset variables
+     unset(_lib_dirs)
+     unset(_pkgconfig_path)
+@@ -458,6 +502,7 @@ macro(_pkg_set_path_internal)
+     unset(_pkgconfig_allow_system_libs_old)
+   endif()
+   set(ENV{PKG_CONFIG_ALLOW_SYSTEM_LIBS} 1)
++
+   if(DEFINED ENV{PKG_CONFIG_ALLOW_SYSTEM_CFLAGS})
+     set(_pkgconfig_allow_system_cflags_old "$ENV{PKG_CONFIG_ALLOW_SYSTEM_CFLAGS}")
+   else()
+@@ -466,6 +511,7 @@ macro(_pkg_set_path_internal)
+   set(ENV{PKG_CONFIG_ALLOW_SYSTEM_CFLAGS} 1)
+ endmacro()
+ 
++
+ macro(_pkg_restore_path_internal)
+   if(NOT _extra_paths STREQUAL "")
+     # Restore the environment variable
+@@ -583,6 +629,7 @@ macro(_pkg_check_modules_internal _is_required _is_silent _no_cmake_path _no_cma
+     set(_pkg_check_modules_packages)
+     set(_pkg_check_modules_failed "")
+ 
++
+     _pkg_set_path_internal()
+ 
+     # iterate through module list and check whether they exist and match the required version
+@@ -629,6 +676,7 @@ macro(_pkg_check_modules_internal _is_required _is_silent _no_cmake_path _no_cma
+         ERROR_VARIABLE _pkgconfig_error
+         ERROR_STRIP_TRAILING_WHITESPACE)
+ 
++      
+       # evaluate result and tell failures
+       if (_pkgconfig_retval)
+         if(NOT ${_is_silent})
+@@ -636,6 +684,7 @@ macro(_pkg_check_modules_internal _is_required _is_silent _no_cmake_path _no_cma
+         endif()
+ 
+         string(APPEND _pkg_check_modules_failed " - ${_pkg_check_modules_pkg}\n")
++        message(WARNING "Error find ${_pkg_check_modules_pkg}")
+       endif()
+     endforeach()
+ 
